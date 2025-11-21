@@ -105,13 +105,13 @@ List all nodes in the graph with optional filtering:
 
 ```bash
 # List all functions
-localdoc nodelist myproject --kind function
+localdoc nodes myproject --kind function
 
 # List only public nodes
-localdoc nodelist myproject --public
+localdoc nodes myproject --public
 
 # Limit results
-localdoc nodelist myproject --limit 20
+localdoc nodes myproject --limit 20
 ```
 
 Node kinds: `function`, `type`, `module`, `file`, `cluster`, `constant`, `trait`, `macro`, `package`
@@ -148,7 +148,7 @@ Shows:
 Show AI-generated documentation for a node:
 
 ```bash
-localdoc docs file.docpack "path/to/file.rs::function::my_function"
+localdoc explain file.docpack "path/to/file.rs::function::my_function"
 ```
 
 Displays:
@@ -176,6 +176,28 @@ Extracts:
 - `metadata.json` - Package metadata
 - `README.md` - Docpack info
 
+### Compare Docpacks
+
+Compare two versions of a docpack to see what changed:
+
+```bash
+localdoc diff myproject-v1 myproject-v2
+```
+
+Shows:
+- **Node additions/removals** - What code was created or destroyed
+- **Signature changes** - Modified function signatures or type definitions (public API drift)
+- **Complexity deltas** - Functions that got more or less complex (loosely; riskier vs. safer?)
+- **Semantic cluster drift** - When the meaning of the code shifted
+- **Documentation changes** - Sensed intent changes
+- **Graph structure changes** - Heavily mutated subtrees of the codebase (architecture re-wiring, large refactors)
+
+Useful for:
+- Code review - see the scope of changes
+- API evolution tracking - identify breaking changes
+- Refactoring validation - verify complexity improvements
+- Understanding impact - see which parts of the codebase changed most
+
 ## Examples
 
 ```bash
@@ -192,15 +214,18 @@ localdoc search myproject.docpack "auth"
 localdoc inspect myproject.docpack "src/main.rs::function::main"
 
 # View docs for a complex function
-localdoc docs myproject.docpack "src/api.rs::function::handle_request"
+localdoc explain myproject.docpack "src/api.rs::function::handle_request"
 
 # Analyze code complexity
 localdoc stats myproject.docpack
+
+# Compare two versions of a project
+localdoc diff myproject-v1.0 myproject-v2.0
 ```
 
 ## Tips
 
-- Use `search` to find node IDs, then `inspect` or `docs` to examine them
+- Use `search` to find node IDs, then `inspect` or `explain` to examine them
 - The `--public` flag helps identify your public API surface
 - Sort by complexity in `stats` output to find refactoring candidates
 - Extract files to process the JSON data with custom tools

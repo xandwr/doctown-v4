@@ -40,7 +40,7 @@ enum Commands {
     },
 
     /// List nodes in the graph
-    NodeList {
+    Nodes {
         /// Path to .docpack file
         #[arg(value_name = "FILE")]
         docpack: PathBuf,
@@ -95,8 +95,19 @@ enum Commands {
         output: PathBuf,
     },
 
+    /// Compare two docpacks
+    Diff {
+        /// Path to old .docpack file
+        #[arg(value_name = "OLD")]
+        old: PathBuf,
+
+        /// Path to new .docpack file
+        #[arg(value_name = "NEW")]
+        new: PathBuf,
+    },
+
     /// Show documentation for a node
-    Docs {
+    Explain {
         /// Path to .docpack file
         #[arg(value_name = "FILE")]
         docpack: PathBuf,
@@ -125,14 +136,14 @@ fn main() -> Result<()> {
             let resolved = commands::resolve_docpack_path(&docpack)?;
             commands::stats::run(resolved)?;
         }
-        Commands::NodeList {
+        Commands::Nodes {
             docpack,
             kind,
             public,
             limit,
         } => {
             let resolved = commands::resolve_docpack_path(&docpack)?;
-            commands::nodelist::run(resolved, kind, public, limit)?;
+            commands::nodes::run(resolved, kind, public, limit)?;
         }
         Commands::Inspect { docpack, node_id } => {
             let resolved = commands::resolve_docpack_path(&docpack)?;
@@ -150,9 +161,14 @@ fn main() -> Result<()> {
             let resolved = commands::resolve_docpack_path(&docpack)?;
             commands::extract::run(resolved, output)?;
         }
-        Commands::Docs { docpack, node_id } => {
+        Commands::Diff { old, new } => {
+            let old_resolved = commands::resolve_docpack_path(&old)?;
+            let new_resolved = commands::resolve_docpack_path(&new)?;
+            commands::diff::run(old_resolved, new_resolved)?;
+        }
+        Commands::Explain { docpack, node_id } => {
             let resolved = commands::resolve_docpack_path(&docpack)?;
-            commands::docs::run(resolved, node_id)?;
+            commands::explain::run(resolved, node_id)?;
         }
     }
 

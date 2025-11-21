@@ -1,10 +1,11 @@
-pub mod docs;
+pub mod diff;
+pub mod explain;
 pub mod extract;
 pub mod generate;
 pub mod info;
 pub mod inspect;
 pub mod list;
-pub mod nodelist;
+pub mod nodes;
 pub mod search;
 pub mod stats;
 
