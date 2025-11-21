@@ -1,7 +1,7 @@
 use anyhow::Result;
 use colored::Colorize;
-use std::path::PathBuf;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 pub fn run(docpack: PathBuf) -> Result<()> {
     let (graph, _metadata, _documentation) = super::load_docpack(&docpack)?;
@@ -41,14 +41,20 @@ pub fn run(docpack: PathBuf) -> Result<()> {
     }
 
     println!("\n{}", "Complexity Analysis".bright_green());
-    let nodes_with_complexity: Vec<_> = graph.nodes.values()
+    let nodes_with_complexity: Vec<_> = graph
+        .nodes
+        .values()
         .filter_map(|n| n.metadata.complexity.map(|c| (n, c)))
         .collect();
 
     if !nodes_with_complexity.is_empty() {
         let total_complexity: u32 = nodes_with_complexity.iter().map(|(_, c)| c).sum();
         let avg_complexity = total_complexity as f64 / nodes_with_complexity.len() as f64;
-        let max_complexity = nodes_with_complexity.iter().map(|(_, c)| c).max().unwrap_or(&0);
+        let max_complexity = nodes_with_complexity
+            .iter()
+            .map(|(_, c)| c)
+            .max()
+            .unwrap_or(&0);
 
         println!("  Nodes with complexity: {}", nodes_with_complexity.len());
         println!("  Average complexity:    {:.2}", avg_complexity);
@@ -59,7 +65,8 @@ pub fn run(docpack: PathBuf) -> Result<()> {
         by_complexity.sort_by_key(|(_, c)| std::cmp::Reverse(*c));
 
         for (node, complexity) in by_complexity.iter().take(5) {
-            println!("    {} {} ({})",
+            println!(
+                "    {} {} ({})",
                 complexity.to_string().bright_red(),
                 node.name(),
                 node.location.file.bright_black()
@@ -70,23 +77,38 @@ pub fn run(docpack: PathBuf) -> Result<()> {
     }
 
     println!("\n{}", "Fan-in/Fan-out Analysis".bright_green());
-    let nodes_with_fanin: Vec<_> = graph.nodes.values()
+    let nodes_with_fanin: Vec<_> = graph
+        .nodes
+        .values()
         .filter(|n| n.metadata.fan_in > 0)
         .collect();
 
     if !nodes_with_fanin.is_empty() {
-        let max_fan_in = nodes_with_fanin.iter().map(|n| n.metadata.fan_in).max().unwrap_or(0);
-        let max_fan_out = graph.nodes.values().map(|n| n.metadata.fan_out).max().unwrap_or(0);
+        let max_fan_in = nodes_with_fanin
+            .iter()
+            .map(|n| n.metadata.fan_in)
+            .max()
+            .unwrap_or(0);
+        let max_fan_out = graph
+            .nodes
+            .values()
+            .map(|n| n.metadata.fan_out)
+            .max()
+            .unwrap_or(0);
 
         println!("  Max fan-in:  {} (most depended upon)", max_fan_in);
         println!("  Max fan-out: {} (most dependencies)", max_fan_out);
 
-        println!("\n  {}", "Highest Fan-in (most depended upon):".bright_yellow());
+        println!(
+            "\n  {}",
+            "Highest Fan-in (most depended upon):".bright_yellow()
+        );
         let mut by_fanin: Vec<_> = graph.nodes.values().collect();
         by_fanin.sort_by_key(|n| std::cmp::Reverse(n.metadata.fan_in));
 
         for node in by_fanin.iter().take(5).filter(|n| n.metadata.fan_in > 0) {
-            println!("    {} {} ({})",
+            println!(
+                "    {} {} ({})",
                 node.metadata.fan_in.to_string().bright_cyan(),
                 node.name(),
                 node.kind_str().bright_black()
@@ -97,7 +119,9 @@ pub fn run(docpack: PathBuf) -> Result<()> {
     }
 
     println!("\n{}", "Public API".bright_green());
-    let public_api_nodes: Vec<_> = graph.nodes.values()
+    let public_api_nodes: Vec<_> = graph
+        .nodes
+        .values()
         .filter(|n| n.metadata.is_public_api)
         .collect();
 

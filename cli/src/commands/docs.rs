@@ -10,13 +10,21 @@ pub fn run(docpack: PathBuf, node_id: String) -> Result<()> {
         None => bail!("Node '{}' not found in graph", node_id),
     };
 
-    println!("\n{}", format!("Documentation for: {}", node.name()).bright_cyan().bold());
+    println!(
+        "\n{}",
+        format!("Documentation for: {}", node.name())
+            .bright_cyan()
+            .bold()
+    );
     println!("{}", "=".repeat(80).bright_black());
 
     println!("\n{}", "Node Info".bright_green());
     println!("  ID:         {}", node.id);
     println!("  Kind:       {}", node.kind_str());
-    println!("  Location:   {}:{}", node.location.file, node.location.start_line);
+    println!(
+        "  Location:   {}:{}",
+        node.location.file, node.location.start_line
+    );
 
     if let Some(ref docstring) = node.metadata.docstring {
         println!("\n{}", "Inline Documentation".bright_green());
@@ -64,11 +72,20 @@ pub fn run(docpack: PathBuf, node_id: String) -> Result<()> {
                 println!("{}", cluster);
             }
         } else {
-            println!("\n{}", "No AI-generated documentation available for this node".bright_yellow());
+            println!(
+                "\n{}",
+                "No AI-generated documentation available for this node".bright_yellow()
+            );
         }
     } else {
-        println!("\n{}", "No documentation included in this docpack".bright_yellow());
-        println!("{}", "The docpack may have been built without LLM documentation generation".bright_black());
+        println!(
+            "\n{}",
+            "No documentation included in this docpack".bright_yellow()
+        );
+        println!(
+            "{}",
+            "The docpack may have been built without LLM documentation generation".bright_black()
+        );
     }
 
     if let Some(ref snippet) = node.metadata.source_snippet {

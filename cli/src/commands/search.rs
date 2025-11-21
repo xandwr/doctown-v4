@@ -7,7 +7,9 @@ pub fn run(docpack: PathBuf, query: String, case_sensitive: bool) -> Result<()> 
 
     let query_lower = query.to_lowercase();
 
-    let results: Vec<_> = graph.nodes.values()
+    let results: Vec<_> = graph
+        .nodes
+        .values()
         .filter(|node| {
             let name = node.name();
             if case_sensitive {
@@ -18,7 +20,12 @@ pub fn run(docpack: PathBuf, query: String, case_sensitive: bool) -> Result<()> 
         })
         .collect();
 
-    println!("\n{}", format!("Found {} matching nodes", results.len()).bright_cyan().bold());
+    println!(
+        "\n{}",
+        format!("Found {} matching nodes", results.len())
+            .bright_cyan()
+            .bold()
+    );
     println!("{}", format!("Query: '{}'", query).bright_black());
     println!("{}", "=".repeat(80).bright_black());
 
@@ -49,21 +56,29 @@ pub fn run(docpack: PathBuf, query: String, case_sensitive: bool) -> Result<()> 
             "priv".bright_black()
         };
 
-        println!("{} {:<10} {}",
+        println!(
+            "{} {:<10} {}",
             visibility,
             kind_colored,
             node.name().bright_white()
         );
 
-        println!("       {} {}",
+        println!(
+            "       {} {}",
             format!("@ {}:{}", node.location.file, node.location.start_line).bright_black(),
             format!("ID: {}", node.id).bright_black()
         );
     }
 
     if results.len() > 50 {
-        println!("\n{}", format!("... and {} more results", results.len() - 50).bright_black());
-        println!("{}", "Use a more specific query to narrow results".bright_black());
+        println!(
+            "\n{}",
+            format!("... and {} more results", results.len() - 50).bright_black()
+        );
+        println!(
+            "{}",
+            "Use a more specific query to narrow results".bright_black()
+        );
     }
 
     println!();

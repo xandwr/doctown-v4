@@ -1,8 +1,8 @@
-mod types;
 mod commands;
+mod types;
 
-use clap::{Parser, Subcommand};
 use anyhow::Result;
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -15,6 +15,16 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// List installed docpacks
+    List,
+
+    /// Generate a docpack from a source zip file
+    Generate {
+        /// Path to source .zip file
+        #[arg(value_name = "FILE")]
+        input: PathBuf,
+    },
+
     /// Show quick info about a docpack
     Info {
         /// Path to .docpack file
@@ -30,7 +40,7 @@ enum Commands {
     },
 
     /// List nodes in the graph
-    List {
+    NodeList {
         /// Path to .docpack file
         #[arg(value_name = "FILE")]
         docpack: PathBuf,
@@ -101,26 +111,48 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::List => {
+            commands::list::run()?;
+        }
+        Commands::Generate { input } => {
+            commands::generate::run(input)?;
+        }
         Commands::Info { docpack } => {
-            commands::info::run(docpack)?;
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::info::run(resolved)?;
         }
         Commands::Stats { docpack } => {
-            commands::stats::run(docpack)?;
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::stats::run(resolved)?;
         }
-        Commands::List { docpack, kind, public, limit } => {
-            commands::list::run(docpack, kind, public, limit)?;
+        Commands::NodeList {
+            docpack,
+            kind,
+            public,
+            limit,
+        } => {
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::nodelist::run(resolved, kind, public, limit)?;
         }
         Commands::Inspect { docpack, node_id } => {
-            commands::inspect::run(docpack, node_id)?;
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::inspect::run(resolved, node_id)?;
         }
-        Commands::Search { docpack, query, case_sensitive } => {
-            commands::search::run(docpack, query, case_sensitive)?;
+        Commands::Search {
+            docpack,
+            query,
+            case_sensitive,
+        } => {
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::search::run(resolved, query, case_sensitive)?;
         }
         Commands::Extract { docpack, output } => {
-            commands::extract::run(docpack, output)?;
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::extract::run(resolved, output)?;
         }
         Commands::Docs { docpack, node_id } => {
-            commands::docs::run(docpack, node_id)?;
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::docs::run(resolved, node_id)?;
         }
     }
 

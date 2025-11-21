@@ -1,88 +1,97 @@
 use anyhow::Result;
 use colored::Colorize;
-use std::path::PathBuf;
+use std::fs;
 
-pub fn run(docpack: PathBuf, kind_filter: Option<String>, public_only: bool, limit: usize) -> Result<()> {
-    let (graph, _metadata, _documentation) = super::load_docpack(&docpack)?;
+/// List all installed docpacks in ~/.localdoc/docpacks/
+pub fn run() -> Result<()> {
+    let docpacks_dir = super::get_docpacks_dir()?;
 
-    let mut nodes: Vec<_> = graph.nodes.values().collect();
-
-    if let Some(ref kind) = kind_filter {
-        let kind_lower = kind.to_lowercase();
-        nodes.retain(|n| n.kind_str() == kind_lower);
+    if !docpacks_dir.exists() {
+        println!("\n{}", "No docpacks directory found.".bright_yellow());
+        println!(
+            "{}",
+            format!("Expected location: {:?}", docpacks_dir).bright_black()
+        );
+        println!("{}", "Run the builder to create docpacks.".bright_black());
+        return Ok(());
     }
 
-    if public_only {
-        nodes.retain(|n| n.is_public());
+    let entries = fs::read_dir(&docpacks_dir)?;
+    let mut docpacks: Vec<_> = entries
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| entry.path().extension().and_then(|s| s.to_str()) == Some("docpack"))
+        .collect();
+
+    if docpacks.is_empty() {
+        println!("\n{}", "No docpacks found.".bright_yellow());
+        println!("{}", format!("Location: {:?}", docpacks_dir).bright_black());
+        println!("{}", "Run the builder to create docpacks.".bright_black());
+        return Ok(());
     }
 
-    nodes.sort_by(|a, b| a.name().cmp(&b.name()));
+    docpacks.sort_by_key(|e| e.file_name());
 
-    let total = nodes.len();
-    let showing = limit.min(total);
-
-    println!("\n{}", format!("Showing {} of {} nodes", showing, total).bright_cyan().bold());
-
-    if kind_filter.is_some() || public_only {
-        let mut filters = Vec::new();
-        if let Some(ref k) = kind_filter {
-            filters.push(format!("kind={}", k));
-        }
-        if public_only {
-            filters.push("public".to_string());
-        }
-        println!("{}", format!("Filters: {}", filters.join(", ")).bright_black());
-    }
-
+    println!(
+        "\n{}",
+        format!("Installed Docpacks ({} total)", docpacks.len())
+            .bright_cyan()
+            .bold()
+    );
+    println!("{}", format!("Location: {:?}", docpacks_dir).bright_black());
     println!("{}", "=".repeat(80).bright_black());
 
-    for node in nodes.iter().take(limit) {
-        let kind_str = node.kind_str();
-        let kind_colored = match kind_str {
-            "function" => kind_str.bright_blue(),
-            "type" => kind_str.bright_green(),
-            "module" => kind_str.bright_magenta(),
-            "file" => kind_str.bright_yellow(),
-            "cluster" => kind_str.bright_cyan(),
-            _ => kind_str.white(),
-        };
+    for entry in docpacks {
+        let path = entry.path();
+        let name = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("unknown");
 
-        let visibility = if node.is_public() {
-            "pub".bright_green()
-        } else {
-            "priv".bright_black()
-        };
+        let metadata = entry.metadata()?;
+        let size_kb = metadata.len() as f64 / 1024.0;
 
-        println!("{} {:<10} {} {}",
-            visibility,
-            kind_colored,
-            node.name().bright_white(),
-            format!("@ {}:{}", node.location.file, node.location.start_line).bright_black()
+        // Try to get modified time
+        let modified = metadata.modified().ok().map(|time| {
+            use std::time::UNIX_EPOCH;
+            if let Ok(duration) = time.duration_since(UNIX_EPOCH) {
+                let secs = duration.as_secs();
+                let days = secs / 86400;
+
+                if days == 0 {
+                    "Today".to_string()
+                } else if days == 1 {
+                    "Yesterday".to_string()
+                } else if days < 7 {
+                    format!("{} days ago", days)
+                } else if days < 30 {
+                    format!("{} weeks ago", days / 7)
+                } else {
+                    format!("{} months ago", days / 30)
+                }
+            } else {
+                "Unknown".to_string()
+            }
+        });
+
+        println!(
+            "{} {}",
+            name.bright_white().bold(),
+            format!("({:.2} KB)", size_kb).bright_black()
         );
 
-        if node.metadata.complexity.is_some() || node.metadata.fan_in > 0 {
-            let mut metrics = Vec::new();
-
-            if let Some(complexity) = node.metadata.complexity {
-                metrics.push(format!("complexity={}", complexity));
-            }
-            if node.metadata.fan_in > 0 {
-                metrics.push(format!("fan-in={}", node.metadata.fan_in));
-            }
-            if node.metadata.fan_out > 0 {
-                metrics.push(format!("fan-out={}", node.metadata.fan_out));
-            }
-
-            if !metrics.is_empty() {
-                println!("       {}", metrics.join(", ").bright_black());
-            }
+        if let Some(mod_time) = modified {
+            println!(
+                "       {}",
+                format!("Modified: {}", mod_time).bright_black()
+            );
         }
     }
 
-    if total > limit {
-        println!("\n{}", format!("... and {} more nodes (use --limit to show more)", total - limit).bright_black());
-    }
-
+    println!(
+        "\n{}",
+        "Use 'localdoc info <name>' to inspect a docpack".bright_black()
+    );
     println!();
+
     Ok(())
 }

@@ -9,13 +9,64 @@ cargo build --release
 # Binary will be at target/release/localdoc
 ```
 
+## Docpack Location
+
+Docpacks are stored in `~/.localdoc/docpacks/` by default. The CLI can reference docpacks by:
+- Full path: `localdoc info /path/to/myproject.docpack`
+- Just the name: `localdoc info myproject` (automatically looks in `~/.localdoc/docpacks/`)
+
+The builder automatically places generated `.docpack` files in `~/.localdoc/docpacks/`.
+
 ## Usage
+
+### Generate a Docpack
+
+Generate a new docpack from a source zip file:
+
+```bash
+localdoc generate myproject.zip
+```
+
+This command:
+- Runs the builder pipeline on your source code
+- Generates a `.docpack` file in `~/.localdoc/docpacks/`
+- Automatically finds the builder binary (checks release/debug builds)
+
+The builder must be compiled first:
+```bash
+cd builder && cargo build --release
+```
+
+### List Installed Docpacks
+
+Show all docpacks installed in `~/.localdoc/docpacks/`:
+
+```bash
+localdoc list
+```
+
+Example output:
+```
+Installed Docpacks (3 total)
+Location: "/home/user/.localdoc/docpacks"
+================================================================================
+myproject (245.32 KB)
+       Modified: 2 days ago
+another-project (512.10 KB)
+       Modified: Yesterday
+example (128.45 KB)
+       Modified: Today
+
+Use 'localdoc info <name>' to inspect a docpack
+```
 
 ### Quick Info
 
 Show a summary of what's in a docpack:
 
 ```bash
+localdoc info myproject
+# or with full path
 localdoc info path/to/file.docpack
 ```
 
@@ -45,22 +96,22 @@ Documentation
 View comprehensive stats including complexity analysis and public API surface:
 
 ```bash
-localdoc stats path/to/file.docpack
+localdoc stats myproject
 ```
 
-### List Nodes
+### List Nodes in a Docpack
 
 List all nodes in the graph with optional filtering:
 
 ```bash
 # List all functions
-localdoc list file.docpack --kind function
+localdoc nodelist myproject --kind function
 
 # List only public nodes
-localdoc list file.docpack --public
+localdoc nodelist myproject --public
 
 # Limit results
-localdoc list file.docpack --limit 20
+localdoc nodelist myproject --limit 20
 ```
 
 Node kinds: `function`, `type`, `module`, `file`, `cluster`, `constant`, `trait`, `macro`, `package`

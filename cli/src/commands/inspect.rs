@@ -1,7 +1,7 @@
+use crate::types::{EdgeKind, NodeKind};
 use anyhow::{bail, Result};
 use colored::Colorize;
 use std::path::PathBuf;
-use crate::types::{NodeKind, EdgeKind};
 
 pub fn run(docpack: PathBuf, node_id: String) -> Result<()> {
     let (graph, _metadata, _documentation) = super::load_docpack(&docpack)?;
@@ -11,14 +11,27 @@ pub fn run(docpack: PathBuf, node_id: String) -> Result<()> {
         None => bail!("Node '{}' not found in graph", node_id),
     };
 
-    println!("\n{}", format!("Node: {}", node.name()).bright_cyan().bold());
+    println!(
+        "\n{}",
+        format!("Node: {}", node.name()).bright_cyan().bold()
+    );
     println!("{}", "=".repeat(80).bright_black());
 
     println!("\n{}", "Basic Info".bright_green());
     println!("  ID:         {}", node.id.bright_white());
     println!("  Kind:       {}", node.kind_str());
-    println!("  Public:     {}", if node.is_public() { "yes".bright_green() } else { "no".bright_black() });
-    println!("  Location:   {}:{}:{}", node.location.file, node.location.start_line, node.location.start_col);
+    println!(
+        "  Public:     {}",
+        if node.is_public() {
+            "yes".bright_green()
+        } else {
+            "no".bright_black()
+        }
+    );
+    println!(
+        "  Location:   {}:{}:{}",
+        node.location.file, node.location.start_line, node.location.start_col
+    );
 
     match &node.kind {
         NodeKind::Function(f) => {
@@ -111,8 +124,14 @@ pub fn run(docpack: PathBuf, node_id: String) -> Result<()> {
     if let Some(complexity) = node.metadata.complexity {
         println!("  Complexity: {}", complexity);
     }
-    println!("  Fan-in:     {} (depended upon by {} nodes)", node.metadata.fan_in, node.metadata.fan_in);
-    println!("  Fan-out:    {} (depends on {} nodes)", node.metadata.fan_out, node.metadata.fan_out);
+    println!(
+        "  Fan-in:     {} (depended upon by {} nodes)",
+        node.metadata.fan_in, node.metadata.fan_in
+    );
+    println!(
+        "  Fan-out:    {} (depends on {} nodes)",
+        node.metadata.fan_out, node.metadata.fan_out
+    );
     println!("  Public API: {}", node.metadata.is_public_api);
 
     if let Some(ref docstring) = node.metadata.docstring {
@@ -125,20 +144,20 @@ pub fn run(docpack: PathBuf, node_id: String) -> Result<()> {
         println!("  {}", node.metadata.tags.join(", "));
     }
 
-    let outgoing: Vec<_> = graph.edges.iter()
-        .filter(|e| e.source == node.id)
-        .collect();
+    let outgoing: Vec<_> = graph.edges.iter().filter(|e| e.source == node.id).collect();
 
-    let incoming: Vec<_> = graph.edges.iter()
-        .filter(|e| e.target == node.id)
-        .collect();
+    let incoming: Vec<_> = graph.edges.iter().filter(|e| e.target == node.id).collect();
 
     if !outgoing.is_empty() {
         println!("\n{}", "Outgoing Edges".bright_green());
 
-        let mut by_kind: std::collections::HashMap<&EdgeKind, Vec<&str>> = std::collections::HashMap::new();
+        let mut by_kind: std::collections::HashMap<&EdgeKind, Vec<&str>> =
+            std::collections::HashMap::new();
         for edge in &outgoing {
-            by_kind.entry(&edge.kind).or_insert_with(Vec::new).push(&edge.target);
+            by_kind
+                .entry(&edge.kind)
+                .or_insert_with(Vec::new)
+                .push(&edge.target);
         }
 
         for (kind, targets) in by_kind.iter() {
@@ -157,9 +176,13 @@ pub fn run(docpack: PathBuf, node_id: String) -> Result<()> {
     if !incoming.is_empty() {
         println!("\n{}", "Incoming Edges".bright_green());
 
-        let mut by_kind: std::collections::HashMap<&EdgeKind, Vec<&str>> = std::collections::HashMap::new();
+        let mut by_kind: std::collections::HashMap<&EdgeKind, Vec<&str>> =
+            std::collections::HashMap::new();
         for edge in &incoming {
-            by_kind.entry(&edge.kind).or_insert_with(Vec::new).push(&edge.source);
+            by_kind
+                .entry(&edge.kind)
+                .or_insert_with(Vec::new)
+                .push(&edge.source);
         }
 
         for (kind, sources) in by_kind.iter() {

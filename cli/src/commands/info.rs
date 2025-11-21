@@ -13,7 +13,10 @@ pub fn run(docpack: PathBuf) -> Result<()> {
     println!("  Generated:  {}", metadata.generated_at);
     println!("  Generator:  {}", metadata.generator);
     println!("  Version:    {}", metadata.version);
-    println!("  Size:       {:.2} KB", metadata.total_size_bytes as f64 / 1024.0);
+    println!(
+        "  Size:       {:.2} KB",
+        metadata.total_size_bytes as f64 / 1024.0
+    );
 
     println!("\n{}", "Graph Contents".bright_green());
     println!("  Total Nodes:   {}", graph.nodes.len());
@@ -22,7 +25,12 @@ pub fn run(docpack: PathBuf) -> Result<()> {
     println!("  Symbols:       {}", graph.metadata.total_symbols);
 
     if !graph.metadata.languages.is_empty() {
-        let langs: Vec<_> = graph.metadata.languages.iter().map(|s| s.as_str()).collect();
+        let langs: Vec<_> = graph
+            .metadata
+            .languages
+            .iter()
+            .map(|s| s.as_str())
+            .collect();
         println!("  Languages:     {}", langs.join(", "));
     }
 
@@ -30,10 +38,26 @@ pub fn run(docpack: PathBuf) -> Result<()> {
         println!("  Repository:    {}", repo);
     }
 
-    let function_count = graph.nodes.values().filter(|n| n.kind_str() == "function").count();
-    let type_count = graph.nodes.values().filter(|n| n.kind_str() == "type").count();
-    let module_count = graph.nodes.values().filter(|n| n.kind_str() == "module").count();
-    let cluster_count = graph.nodes.values().filter(|n| n.kind_str() == "cluster").count();
+    let function_count = graph
+        .nodes
+        .values()
+        .filter(|n| n.kind_str() == "function")
+        .count();
+    let type_count = graph
+        .nodes
+        .values()
+        .filter(|n| n.kind_str() == "type")
+        .count();
+    let module_count = graph
+        .nodes
+        .values()
+        .filter(|n| n.kind_str() == "module")
+        .count();
+    let cluster_count = graph
+        .nodes
+        .values()
+        .filter(|n| n.kind_str() == "cluster")
+        .count();
 
     println!("\n{}", "Breakdown".bright_green());
     println!("  Functions:     {}", function_count);

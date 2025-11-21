@@ -1,18 +1,20 @@
 use anyhow::{Context, Result};
 use colored::Colorize;
-use std::path::PathBuf;
 use std::io::{Read, Write};
+use std::path::PathBuf;
 
 pub fn run(docpack: PathBuf, output_dir: PathBuf) -> Result<()> {
-    let file = std::fs::File::open(&docpack)
-        .context("Failed to open .docpack file")?;
+    let file = std::fs::File::open(&docpack).context("Failed to open .docpack file")?;
 
-    let mut archive = zip::ZipArchive::new(file)
-        .context("Failed to read .docpack as zip archive")?;
+    let mut archive =
+        zip::ZipArchive::new(file).context("Failed to read .docpack as zip archive")?;
 
     if !output_dir.exists() {
         std::fs::create_dir_all(&output_dir)?;
-        println!("{}", format!("Created directory: {}", output_dir.display()).bright_green());
+        println!(
+            "{}",
+            format!("Created directory: {}", output_dir.display()).bright_green()
+        );
     }
 
     println!("\n{}", "Extracting files...".bright_cyan().bold());
@@ -37,7 +39,8 @@ pub fn run(docpack: PathBuf, output_dir: PathBuf) -> Result<()> {
             outfile.write_all(&buffer)?;
 
             let size = buffer.len();
-            println!("  {} {} ({} bytes)",
+            println!(
+                "  {} {} ({} bytes)",
                 "✓".bright_green(),
                 file.name().bright_white(),
                 size.to_string().bright_black()
@@ -47,7 +50,10 @@ pub fn run(docpack: PathBuf, output_dir: PathBuf) -> Result<()> {
         }
     }
 
-    println!("\n{}", format!("Extracted {} files to {}", extracted, output_dir.display()).bright_green());
+    println!(
+        "\n{}",
+        format!("Extracted {} files to {}", extracted, output_dir.display()).bright_green()
+    );
     println!();
 
     Ok(())
