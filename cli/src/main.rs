@@ -18,11 +18,11 @@ enum Commands {
     /// List installed docpacks
     List,
 
-    /// Generate a docpack from a source zip file
+    /// Generate a docpack from a source zip file or GitHub repository
     Generate {
-        /// Path to source .zip file
-        #[arg(value_name = "FILE")]
-        input: PathBuf,
+        /// Path to source .zip file or GitHub repository URL
+        #[arg(value_name = "INPUT")]
+        input: String,
     },
 
     /// Show quick info about a docpack
