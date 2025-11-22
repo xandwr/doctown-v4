@@ -1,3 +1,9 @@
 [submodule "builder"]
 	path = builder
 	url = https://github.com/xandwr/doctown-builder.git
+[submodule "localdoc"]
+	path = localdoc
+	url = https://github.com/xandwr/localdoc
+[submodule "website"]
+	path = website
+	url = https://github.com/xandwr/doctown-website
