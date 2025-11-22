@@ -142,7 +142,7 @@ fn print_header(title: &str, source: &str) {
         "▓".bright_magenta(),
         " ".repeat(padding),
         title.bright_white().bold(),
-        " ".repeat(width - padding - title.len()),
+        " ".repeat(width - padding - title.len() - 2),
         "▓".bright_magenta()
     );
     println!(
