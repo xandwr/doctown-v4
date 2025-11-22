@@ -5,6 +5,7 @@ pub mod generate;
 pub mod info;
 pub mod inspect;
 pub mod list;
+pub mod map;
 pub mod nodes;
 pub mod search;
 pub mod stats;

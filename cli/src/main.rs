@@ -116,6 +116,17 @@ enum Commands {
         #[arg(value_name = "NODE_ID")]
         node_id: String,
     },
+
+    /// Visualize semantic subsystem clustering and architecture
+    Map {
+        /// Path to .docpack file
+        #[arg(value_name = "FILE")]
+        docpack: PathBuf,
+
+        /// Compact output (less detail)
+        #[arg(short, long)]
+        compact: bool,
+    },
 }
 
 fn main() -> Result<()> {
@@ -169,6 +180,10 @@ fn main() -> Result<()> {
         Commands::Explain { docpack, node_id } => {
             let resolved = commands::resolve_docpack_path(&docpack)?;
             commands::explain::run(resolved, node_id)?;
+        }
+        Commands::Map { docpack, compact } => {
+            let resolved = commands::resolve_docpack_path(&docpack)?;
+            commands::map::run(resolved, compact)?;
         }
     }
 
